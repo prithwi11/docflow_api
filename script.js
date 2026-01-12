@@ -2,15 +2,14 @@ import http from 'k6/http';
 import { check } from 'k6';
 import encoding from 'k6/encoding';
 
-const binFile = open('/home/sagar/Downloads/lukasz-szmigiel-Uw9DfCe2e7A-unsplash.jpg', 'b');
+const binFile = open('/home/sagar/Pictures/1.png', 'b');
 
 export const options = {
   stages: [
-    { duration: '30s', target: 2 },
-    { duration: '30s', target: 5 },
-    { duration: '30s', target: 10 },
-    { duration: '30s', target: 20 },
     { duration: '30s', target: 30 },
+    { duration: '30s', target: 100 },
+    { duration: '30s', target: 500 },
+    { duration: '30s', target: 1000 },
   ],
   thresholds: {
     http_req_duration: ['p(95)<2000'],
@@ -20,7 +19,7 @@ export const options = {
 
 export default function () {
   const payload = {
-    file: http.file(binFile, 'lukasz-szmigiel-Uw9DfCe2e7A-unsplash.jpg', 'image/jpeg'),
+    file: http.file(binFile, '1.png', 'image/jpeg'),
   };
 
   const res = http.post('http://localhost:3000/v1/file/upload', payload, {

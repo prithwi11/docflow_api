@@ -17,10 +17,11 @@ export class FileController {
       cb(null, uniqueName);
     },
   });
-
   private upload = multer({
     storage: this.storage,
   }).single("file");
+  /* private storage = multer.memoryStorage();
+  private upload = multer({storage: this.storage}).single("file") */
 
   fileUploadController = (req: Request, res: Response, next: NextFunction) => {
     this.upload(req, res, async (err: any) => {
