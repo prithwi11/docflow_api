@@ -34,7 +34,8 @@ export class FileController {
       }
 
       try {
-        const processedFilename = await this.resizeImage(req.file.path, req.file.filename);
+        const processImage = global.SQS_HELPER.sendToRabbitMQ({image_name: req.file.filename});
+        console.log("processImage", processImage)
         return res.status(200).json({
           message: "File uploaded and PDF processed successfully",
         });
