@@ -4,6 +4,7 @@ import fs from "fs";
 import sharp from "sharp";
 import { Request, Response, NextFunction } from "express";
 import { pipeline } from "stream/promises";
+import { metricsEmitter } from "../Metrics/metricsEmitter";
 
 export class FileController {
   constructor() {}
@@ -24,22 +25,45 @@ export class FileController {
   private upload = multer({storage: this.storage}).single("file") */
 
   fileUploadController = (req: Request, res: Response, next: NextFunction) => {
+    const startTime = Date.now();
+
     this.upload(req, res, async (err: any) => {
       if (err) {
+        metricsEmitter.emit("api_request_complete", {
+          durationMs: Date.now() - startTime,
+          succcess: false,
+        });
+
         return res.status(400).json({ error: err.message });
       }
 
       if (!req.file) {
+        metricsEmitter.emit("api_request_complete", {
+          durationMs: Date.now() - startTime,
+          succcess: false,
+        });
+
         return res.status(400).json({ message: "No file uploaded" });
       }
 
       try {
         const processImage = global.SQS_HELPER.sendToRabbitMQ({image_name: req.file.filename});
-        console.log("processImage", processImage)
+        console.log("processImage", processImage);
+        metricsEmitter.emit("queue_publish_success");
+        metricsEmitter.emit("api_request_complete", {
+          durationMs: Date.now() - startTime,
+          success: true
+        });
         return res.status(200).json({
           message: "File uploaded and PDF processed successfully",
         });
       } catch (error: any) {
+        metricsEmitter.emit("queue_publish_error");
+
+        metricsEmitter.emit("api_request_complete", {
+          durationMs: Date.now() - startTime,
+          success: false,
+        });
         return res.status(500).json({
           message: "Error processing PDF",
           error: error.message,

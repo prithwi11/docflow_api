@@ -6,6 +6,9 @@ import { config } from "./configuration/config"
 import { Sequelize } from "sequelize"
 import { app_route } from "./app_routing"
 import { SqsHelper } from "./helpers/sqs_helper"
+import "./Metrics/apiMetricsListener"
+import "./Metrics/apiMetricsWriter";
+
 dotenv.config()
 const app = express()
 const server = http.createServer()
