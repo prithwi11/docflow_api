@@ -14,4 +14,6 @@ setInterval(() => {
     apiMetrics.requestCount = 0;
     apiMetrics.errorCount = 0;
     apiMetrics.durations = [];
+    apiMetrics.queuePublishCount = 0;
+    apiMetrics.queuePublishError = 0;
 }, 60_000)

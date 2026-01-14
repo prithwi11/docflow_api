@@ -1,4 +1,5 @@
 import * as seq from "sequelize"
+import mongoose from "mongoose";
 
 export class config {
     private dbName: string = "";
@@ -28,5 +29,22 @@ export class config {
 
         let conn = new seq.Sequelize(this.dbName, this.dbUserName, this.dbPassword, connectionConfigObj);
         return conn;
+    }
+
+    connectToMongo = async() => {
+        const mongo_uri: string = process.env.MONGODB_URI as string;
+        const mongodb_name: string = process.env.MONGODB_NAME as string;
+        const mongo_con = mongo_uri + mongodb_name;
+
+        try {
+            await mongoose.connect(mongo_con, {
+                dbName : mongodb_name
+            });
+            console.log("connected to mongo")
+        }
+        catch (error: any) {
+            console.log("MongoDB connection error", error);
+            process.exit(1)
+        }
     }
 }

@@ -20,6 +20,12 @@ export function buildApiSnapshot() {
             response_time_p99: percentile(apiMetrics.durations, 99),
             error_rate: apiMetrics.errorCount / Math.max(count, 1),
             success_rate: (count - apiMetrics.errorCount) / Math.max(count, 1)
-        }
+        },
+        queue: {
+            publish_rate: apiMetrics.queuePublishCount / 60,
+            publish_error_rate:
+              apiMetrics.queuePublishError /
+              Math.max(apiMetrics.queuePublishCount, 1),
+          },
     }
 }

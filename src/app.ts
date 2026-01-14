@@ -17,13 +17,14 @@ const PORT = process.env.PORT
 declare global {
     var connectionObj: Sequelize;
     var SQS_HELPER: typeof sqs_helper;
+    var mongo_connection: any
 }
 
 const sqs_helper = new SqsHelper();
 global.SQS_HELPER = sqs_helper;
 
 global.connectionObj = new config().connectToPgDB();
-
+global.mongo_connection = new config().connectToMongo();
 // app.use(express.json({limit : '150mb'}));
 // app.use(express.urlencoded({limit : '150mb', extended : true}));
 

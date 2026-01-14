@@ -47,7 +47,7 @@ export class FileController {
       }
 
       try {
-        const processImage = global.SQS_HELPER.sendToRabbitMQ({image_name: req.file.filename});
+        const processImage = global.SQS_HELPER.sendToRabbitMQ({image_name: req.file.filename, startTime: startTime});
         console.log("processImage", processImage);
         metricsEmitter.emit("queue_publish_success");
         metricsEmitter.emit("api_request_complete", {
