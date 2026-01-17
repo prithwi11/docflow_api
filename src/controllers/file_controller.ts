@@ -5,8 +5,12 @@ import sharp from "sharp";
 import { Request, Response, NextFunction } from "express";
 import { pipeline } from "stream/promises";
 import { metricsEmitter } from "../Metrics/metricsEmitter";
+import { randomUUID } from "crypto";
+import moment from "moment";
+import { FileModel } from "../Models/file_model";
 
 export class FileController {
+  private _filesModel = new FileModel();
   constructor() {}
 
   private storage = multer.diskStorage({
@@ -24,12 +28,12 @@ export class FileController {
   /* private storage = multer.memoryStorage();
   private upload = multer({storage: this.storage}).single("file") */
 
-  fileUploadController = (req: Request, res: Response, next: NextFunction) => {
+  fileUploadController = async(req: Request, res: Response, next: NextFunction) => {
     const startTime = Date.now();
 
     this.upload(req, res, async (err: any) => {
       if (err) {
-        metricsEmitter.emit("api_request_complete", {
+        await metricsEmitter.emit("api_request_complete", {
           durationMs: Date.now() - startTime,
           succcess: false,
         });
@@ -38,7 +42,7 @@ export class FileController {
       }
 
       if (!req.file) {
-        metricsEmitter.emit("api_request_complete", {
+        await metricsEmitter.emit("api_request_complete", {
           durationMs: Date.now() - startTime,
           succcess: false,
         });
@@ -47,7 +51,14 @@ export class FileController {
       }
 
       try {
-        const processImage = global.SQS_HELPER.sendToRabbitMQ({image_name: req.file.filename, startTime: startTime});
+        const insert_obj: any = {
+          image_id: randomUUID(),
+          image_name: req.file?.filename as string,
+          status: 'uploaded',
+          added_timestamp: moment().format("YYYY-MM-DD HH:mm:ss")
+        }
+        const insert: any = await this._filesModel.addNewRecord(insert_obj)
+        const processImage = await global.SQS_HELPER.sendToRabbitMQ({image_name: req.file.filename, startTime: startTime, image_id: insert_obj.image_id});
         console.log("processImage", processImage);
         metricsEmitter.emit("queue_publish_success");
         metricsEmitter.emit("api_request_complete", {
@@ -58,9 +69,9 @@ export class FileController {
           message: "File uploaded and PDF processed successfully",
         });
       } catch (error: any) {
-        metricsEmitter.emit("queue_publish_error");
+        await metricsEmitter.emit("queue_publish_error");
 
-        metricsEmitter.emit("api_request_complete", {
+        await metricsEmitter.emit("api_request_complete", {
           durationMs: Date.now() - startTime,
           success: false,
         });
