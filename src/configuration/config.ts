@@ -1,7 +1,7 @@
 import * as seq from "sequelize"
 import mongoose from "mongoose";
 
-export class config {
+export class Connection {
     private dbName: string = "";
     private dbUserName: string = "";
     private dbPassword: string = "";
@@ -31,20 +31,16 @@ export class config {
         return conn;
     }
 
-    connectToMongo = async() => {
-        const mongo_uri: string = process.env.MONGODB_URI as string;
-        const mongodb_name: string = process.env.MONGODB_NAME as string;
-        const mongo_con = mongo_uri + mongodb_name;
-
+    connect() {
         try {
-            await mongoose.connect(mongo_con, {
-                dbName : mongodb_name
-            });
-            console.log("connected to mongo")
-        }
-        catch (error: any) {
-            console.log("MongoDB connection error", error);
-            process.exit(1)
+            mongoose.connect(`${process.env.MONGODB_URI}${process.env.DB_NAME}`).then((res) => {
+                
+                mongoose.connection.useDb(process.env.DB_NAME || "");
+                console.log("Connected to MongoDB Database", res.connection.host);
+            }).catch((err: any) => console.log("Error from MongoDB", err));
+            return mongoose;
+        } catch (error: any) {
+            console.log("Error connecting to MongoDB:", error.message)
         }
     }
 }
