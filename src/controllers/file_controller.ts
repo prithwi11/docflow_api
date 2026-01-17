@@ -58,7 +58,7 @@ export class FileController {
           added_timestamp: moment().format("YYYY-MM-DD HH:mm:ss")
         }
         const insert: any = await this._filesModel.addNewRecord(insert_obj)
-        const processImage = await global.SQS_HELPER.sendToRabbitMQ({image_name: req.file.filename, startTime: startTime});
+        const processImage = await global.SQS_HELPER.sendToRabbitMQ({image_name: req.file.filename, startTime: startTime, image_id: insert_obj.image_id});
         console.log("processImage", processImage);
         metricsEmitter.emit("queue_publish_success");
         metricsEmitter.emit("api_request_complete", {
