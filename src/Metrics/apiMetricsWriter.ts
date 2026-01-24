@@ -1,7 +1,6 @@
 import fs from "fs"
 import { buildApiSnapshot } from "./apiMetricsSnapshot"
 import { apiMetrics } from "./apiMetrics"
-console.log("⏱ metrics writer file loaded");
 setInterval(() => {
     const snapshot = buildApiSnapshot();
     fs.appendFileSync(

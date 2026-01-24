@@ -1,8 +1,10 @@
-import express from "express"
-const app = express();
-
+import { Router } from "express";
 import file_router from "./routes/file_routes";
 
+const router = Router();
 
-app.use('/file', file_router)
-export const app_route = app;
+// Mount file routes at /file path
+router.use("/file", file_router);
+
+export { router as app_route };
+
