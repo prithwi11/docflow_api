@@ -12,7 +12,7 @@ import { Mongoose } from "mongoose"
 dotenv.config()
 const app = express()
 const server = http.createServer()
-const PORT = process.env.PORT
+const PORT = Number(process.env.PORT) || 3000
 
 let connection = new Connection();
 // global.connectionObj = connection.connectToPgDB();
@@ -42,6 +42,6 @@ import { app_route } from "./app_routing"
 
 app.use("/v1", app_route)
 
-app.listen(PORT, () => {
-    console.log(`Server is running on http://localhost:${PORT}`)
-})
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`Server is running on port ${PORT}`)
+});

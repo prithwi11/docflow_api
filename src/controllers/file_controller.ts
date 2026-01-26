@@ -8,9 +8,11 @@ import { metricsEmitter } from "../Metrics/metricsEmitter";
 import { randomUUID } from "crypto";
 import moment from "moment";
 import { FileModel } from "../Models/file_model";
+import { aws_helper } from "../helpers/aws_helper";
 
 export class FileController {
   private _filesModel = new FileModel();
+  private s3_helper = new aws_helper();
   constructor() {}
 
   private storage = multer.diskStorage({
@@ -30,14 +32,14 @@ export class FileController {
 
   fileUploadController = async(req: Request, res: Response, next: NextFunction) => {
     const startTime = Date.now();
-
+    
     this.upload(req, res, async (err: any) => {
       if (err) {
         await metricsEmitter.emit("api_request_complete", {
           durationMs: Date.now() - startTime,
           succcess: false,
         });
-
+    
         return res.status(400).json({ error: err.message });
       }
 
@@ -51,6 +53,10 @@ export class FileController {
       }
 
       try {
+        const s3Response: any = await this.s3_helper.s3Upload( req.file.path, req.file.filename);
+        if (s3Response.error) {
+          throw new Error("S3 upload failed");
+        }
         const insert_obj: any = {
           image_id: randomUUID(),
           image_name: req.file?.filename as string,
@@ -59,7 +65,6 @@ export class FileController {
         }
         const insert: any = await this._filesModel.addNewRecord(insert_obj)
         const processImage = await global.SQS_HELPER.sendToRabbitMQ({image_name: req.file.filename, startTime: startTime, image_id: insert_obj.image_id});
-        console.log("processImage", processImage);
         metricsEmitter.emit("queue_publish_success");
         metricsEmitter.emit("api_request_complete", {
           durationMs: Date.now() - startTime,
