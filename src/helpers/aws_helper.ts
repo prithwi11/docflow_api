@@ -25,7 +25,6 @@ export class aws_helper {
     public s3Upload = async(localFilePath: string, filename: string) => {
         let that = this;
         return new Promise(function (resolve, reject) {
-            console.log("444444444444")
             const command = new PutObjectCommand({
                 Bucket: process.env.S3_BUCKET,
                 Key: filename,
