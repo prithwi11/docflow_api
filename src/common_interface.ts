@@ -1,3 +1,53 @@
+export interface IlogObjForWinston{
+    application? : string,
+    file_name? : string,
+    trace_id? : string,
+    severity? : string,
+    message? : string,
+    method_name? : string,
+    request? : {
+        headers : any
+    }
+}
+
+export interface Ilogger_settingsForWinston{
+    logger_generate_level? : any,
+    logger_enable_write? : boolean, 
+    logger_error_write_all? : boolean,
+    generate_sql_query_log? : boolean,
+    logger_enable_application_name? : string,
+    logger_enable_module_name? : string
+}
+
+export interface IloggerForWinston{
+    stream? : {},
+    format? : {},
+    error: (createMessage: string) => any,
+    warn: (createMessage: string) => any,
+    info: (createMessage: string) => any
+}
+
+export interface IoptionsForWinston{
+    file? : fileForWinston,
+    console? : optiinsForWinston
+}
+
+export interface fileForWinston{
+    level?: string,
+    filename?: string,
+    handleExceptions?: boolean,
+    json?: boolean,
+    maxsize?: number,
+    colorize?: boolean,
+}
+
+export interface optiinsForWinston{
+    level?: string,
+    handleExceptions?: boolean,
+    json?: boolean,
+    colorize?: boolean,
+}
+
 export interface S3helperClient{
     add?: Function[],
     addRelativeTo?: [],
