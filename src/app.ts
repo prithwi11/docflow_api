@@ -7,7 +7,12 @@ import { Sequelize } from "sequelize"
 import { SqsHelper } from "./helpers/sqs_helper"
 import "./Metrics/apiMetricsListener"
 import "./Metrics/apiMetricsWriter";
-import { Mongoose } from "mongoose"
+import { Mongoose } from "mongoose";
+import { winstonlog } from "./configuration/winston"
+import { LOGGER_SETTINGS } from "./configuration/log_config"
+import pathModule from "path"
+
+let winlog = new winstonlog(LOGGER_SETTINGS); // Logger settings From env
 
 dotenv.config()
 const app = express()
@@ -20,13 +25,17 @@ global.mongo_connection = connection.connect();
 
 const sqs_helper = new SqsHelper();
 global.SQS_HELPER = sqs_helper;
+global.logs = winlog;
+global.path = pathModule;
 
 // app.use(express.json({limit : '150mb'}));
 // app.use(express.urlencoded({limit : '150mb', extended : true}));
 declare global {
     var connectionObj: Sequelize;
     var SQS_HELPER: typeof sqs_helper;
-    var mongo_connection: typeof Mongoose | unknown
+    var mongo_connection: typeof Mongoose | unknown;
+    var logs : typeof winlog;
+    var path : typeof pathModule;
 }
 /** ALLOW CORS */
 app.use(cors({
@@ -41,7 +50,7 @@ app.get('/v1/health', (_req: any, res: any) => {
 import { app_route } from "./app_routing"
 
 app.use("/v1", app_route)
-
+winlog.initiateLoggingSystem();
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server is running on port ${PORT}`)
 });
