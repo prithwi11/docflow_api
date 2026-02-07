@@ -42,12 +42,9 @@ export class FileController {
     // global.logs.writelog(apiname_with_trace_id, ['Request : ', req]);
     
     const startTime = Date.now();
-    console.log("1111111")
     
     this.upload(req, res, async (err: any) => {
-      console.log("1111111")
       if (err) {
-        console.log("1111111")
         await metricsEmitter.emit("api_request_complete", {
           durationMs: Date.now() - startTime,
           succcess: false,
@@ -55,31 +52,25 @@ export class FileController {
     
         return res.status(400).json({ error: err.message });
       }
-      console.log("1111111")
       if (!req.file) {
         await metricsEmitter.emit("api_request_complete", {
           durationMs: Date.now() - startTime,
           succcess: false,
         });
-        console.log("1111111")
         return res.status(400).json({ message: "No file uploaded" });
       }
-      console.log("1111111")
       try {
-        console.log("1111111")
         const s3Response: any = await this.s3_helper.s3Upload( req.file.path, req.file.filename);
         global.logs.writelog(apiname_with_trace_id, ["s3Response: ", s3Response]);
         if (s3Response.error) {
           throw new Error("S3 upload failed");
         }
-        console.log("1111111")
         const insert_obj: any = {
           image_id: randomUUID(),
           image_name: req.file?.filename as string,
           status: 'uploaded',
           added_timestamp: moment().format("YYYY-MM-DD HH:mm:ss")
         }
-        console.log("1111111")
         const insert: any = await this._filesModel.addNewRecord(insert_obj);
         global.logs.writelog(apiname_with_trace_id, ["insert: ", insert]);
         const processImage = await global.SQS_HELPER.sendToRabbitMQ({image_name: req.file.filename, startTime: startTime, image_id: insert_obj.image_id});
@@ -92,7 +83,6 @@ export class FileController {
           message: "File uploaded and PDF processed successfully",
         });
       } catch (error: any) {
-        console.log("error", error.stack)
         global.logs.writelog(apiname_with_trace_id, ["ERROR: ", error.stack]);
         await metricsEmitter.emit("queue_publish_error");
 
