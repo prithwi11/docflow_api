@@ -14,33 +14,24 @@ export class CommonMiddleware {
         
 
             try {
-                await this.cloudWatch.send(
-                    new PutMetricDataCommand({
-                      Namespace: "DocFlow/API",
-                      MetricData: [
-                        {
-                          MetricName: "RequestDuration",
-                          Unit: "Microseconds",
-                          Values: [duration],
-                          Counts: [1],
-                          Dimensions: [
-                            { Name: "Method", Value: req.method },
-                            { Name: "Route", Value: req.route?.path || req.originalUrl },
-                            { Name: "StatusCode", Value: res.statusCode.toString() },
-                          ],
-                        },
-                        {
-                          MetricName: "RequestCount",
-                          Unit: "Count",
-                          Value: 1,
-                          Dimensions: [
-                            { Name: "Method", Value: req.method },
-                            { Name: "Route", Value: req.route?.path || req.originalUrl },
-                          ],
-                        },
-                      ],
-                    })
-                  );
+                this.cloudWatch.send(
+                  new PutMetricDataCommand({
+                    Namespace: "DocFlow/API",
+                    MetricData: [
+                      {
+                        MetricName: "RequestDuration",
+                        Unit: "Milliseconds",
+                        Value: duration,
+                        StorageResolution: 1,
+                      },
+                      {
+                        MetricName: "RequestCount",
+                        Unit: "Count",
+                        Value: 1,
+                      },
+                    ],
+                  })
+                );
                   
             }
             catch(error: any) {
