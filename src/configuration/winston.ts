@@ -4,21 +4,18 @@ import requestIp from 'request-ip';
 import moment, { Moment } from "moment-timezone";
 import dotenv, { config } from "dotenv"
 dotenv.config()
-import {
-    IlogObjForWinston,
-    Ilogger_settingsForWinston,
-    IloggerForWinston,
-    IoptionsForWinston
-} from "../common_interface";
-
+import {IlogObjForWinston, Ilogger_settingsForWinston, IloggerForWinston, IoptionsForWinston} from "../common_interface";
+import { AppConfig, configs } from '../app.config';
 export class winstonlog{
     private _logger_settings : Ilogger_settingsForWinston
     public logObj : IlogObjForWinston
     private _fileDate? : string;
     private _options : IoptionsForWinston
     public logger : IloggerForWinston | any;
+    private _config: AppConfig;
       
-    constructor(logger_settings : Ilogger_settingsForWinston) {
+    constructor(logger_settings : Ilogger_settingsForWinston, appConfig: AppConfig = configs) {
+        this._config = appConfig
         this._logger_settings = logger_settings;
         this.logObj = {
             application : "",
@@ -47,7 +44,7 @@ export class winstonlog{
 
     public initiateLoggingSystem() {
         this._fileDate = this.getCurrentISTDate();
-        const filepath = process.env.LOG_PATH;
+        const filepath = this._config.logPath;
         this._options = {
             file: {
               level: 'info',
@@ -64,7 +61,7 @@ export class winstonlog{
               colorize: true,
             },
         };
-        if(process.env.SHOW_CONSOLE_LOG == '1') {
+        if(this._config.showLog == '1') {
         this.logger = winston.createLogger({
             transports: [
               new winston.transports.Console(this._options.console),  
@@ -186,7 +183,7 @@ export class winstonlog{
 
     private getCurrentISTDate(): string {
 		let utc = Date.now() / 1000;
-		return moment.unix(utc).tz(process.env.TZ as string).format('YYYY-MM-DD');
+		return moment.unix(utc).tz(this._config.timezone as string).format('YYYY-MM-DD');
 	}
 
     private getCurrentISTDateTime(): string {

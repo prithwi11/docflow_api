@@ -1,15 +1,20 @@
+import { AppConfig, configs } from "../app.config";
+
 export class SqsHelper {
-    constructor() {}
+    private _config: AppConfig;
+    constructor(appConfig: AppConfig = configs) {
+        this._config = appConfig;
+    }
 
   sendToRabbitMQ = async (params: any) => {
       // setup queue name
-      const queueName = process.env.QUEUE_NAME as string;
+      const queueName = this._config.queueName as string;
 
       const amqp = require('amqplib');
       const { v4: uuidv4 } = require('uuid');
 
       // connect to RabbitMQ
-      const connection = await amqp.connect(process.env.RABBITMQ_HOST);
+      const connection = await amqp.connect(this._config.rabbitmqHost);
 
       // create a channel
       const channel = await connection.createChannel();
@@ -46,7 +51,7 @@ export class SqsHelper {
         const amqp = require('amqplib');
         const { v4: uuidv4 } = require('uuid');
         // connect to RabbitMQ
-        const connection = await amqp.connect(process.env.RABBITMQ_HOST);
+        const connection = await amqp.connect(this._config.rabbitmqHost);
         // create a channel
         const channel = await connection.createChannel();
         // create/update a queue to make sure the queue is exist

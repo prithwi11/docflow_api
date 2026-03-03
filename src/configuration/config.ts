@@ -1,5 +1,6 @@
 import * as seq from "sequelize"
 import mongoose, { Mongoose } from "mongoose";
+import { AppConfig, configs } from "../app.config";
 
 export class Connection {
     private dbName: string = "";
@@ -7,6 +8,10 @@ export class Connection {
     private dbPassword: string = "";
     private maxRetries = 5;
     private retryDelay = 5000;
+    private _config: AppConfig;
+    constructor(appConfig: AppConfig = configs) {
+        this._config = appConfig;
+    }
 
     connectToPgDB() {
         const host = process.env.DB_HOST || 'localhost';
@@ -38,10 +43,11 @@ export class Connection {
     }
 
     connect(): Mongoose {
-        const dbName = process.env.DB_NAME || 'database';
-        const mongoUri = `${process.env.MONGODB_URI || 'mongodb://localhost:27017/'}${dbName}`;
+        const dbName = this._config.dbName;
+        const mongoUri =  this._config.mongoUri;
+        const connectionUri = `${mongoUri}/${dbName}`;
         
-        mongoose.connect(mongoUri, {
+        mongoose.connect(connectionUri, {
             retryWrites: true,
             w: 'majority',
         }).then((res) => {
