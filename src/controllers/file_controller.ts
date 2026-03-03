@@ -9,11 +9,14 @@ import { randomUUID } from "crypto";
 import moment from "moment";
 import { FileModel } from "../Models/file_model";
 import { aws_helper } from "../helpers/aws_helper";
-
+import { Connection } from "mongoose";
 export class FileController {
-  private _filesModel = new FileModel();
   private s3_helper = new aws_helper();
-  constructor() {}
+  private _filesModel: FileModel;
+
+  constructor(connection: Connection) {
+      this._filesModel = new FileModel(connection);
+  }
 
   // INITIALIZE LOG OBJECT
   initLog() {
