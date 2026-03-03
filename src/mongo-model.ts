@@ -1,18 +1,27 @@
 'use strict'
 
-export class MongoModel {
-    private connection: any
-    private schema: {}
-    public MongoModel: any
+import { Connection, Schema } from "mongoose";
 
-    constructor(name: string, schema: {}, schemaOptions: any = {}) {
-        this.connection = global.mongo_connection;
-        this.schema = this.connection.Schema(schema, schemaOptions);
-        this.connection.models = {};
-        this.MongoModel = this.connection.model(name, this.schema);
+export class MongoModel {
+
+    protected MongoModel: any;
+
+    constructor(
+        name: string,
+        schemaDefinition: {},
+        connection: Connection,
+        schemaOptions: any = {}
+    ) {
+
+        const schema = new Schema(schemaDefinition, schemaOptions);
+
+        // Prevent OverwriteModelError
+        this.MongoModel =
+            connection.models[name] ||
+            connection.model(name, schema);
     }
 
     addNewRecord(dataObj: object): Promise<object> {
-        return this.MongoModel.create(dataObj)
+        return this.MongoModel.create(dataObj);
     }
 }

@@ -2,7 +2,7 @@ import express from "express"
 import http from "http"
 import cors from "cors"
 import dotenv, { config } from "dotenv"
-import { Connection } from "./configuration/config"
+import { ConnectionTODB } from "./configuration/config"
 import { Sequelize } from "sequelize"
 import { SqsHelper } from "./helpers/sqs_helper"
 import "./Metrics/apiMetricsListener"
@@ -11,6 +11,7 @@ import { Mongoose } from "mongoose";
 import { winstonlog } from "./configuration/winston"
 import { LOGGER_SETTINGS } from "./configuration/log_config"
 import pathModule from "path"
+import { createAppRouter } from "./app_routing"
 
 let winlog = new winstonlog(LOGGER_SETTINGS); // Logger settings From env
 
@@ -18,10 +19,7 @@ dotenv.config()
 const app = express()
 const server = http.createServer()
 const PORT = Number(process.env.PORT) || 3000
-
-let connection = new Connection();
 // global.connectionObj = connection.connectToPgDB();
-global.mongo_connection = connection.connect();
 
 const sqs_helper = new SqsHelper();
 global.SQS_HELPER = sqs_helper;
@@ -47,10 +45,16 @@ app.get('/v1/health', (_req: any, res: any) => {
     res.json({status : 'ok'})
 })
 
-import { app_route } from "./app_routing"
-
-app.use("/v1", app_route)
 winlog.initiateLoggingSystem();
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`Server is running on port ${PORT}`)
-});
+(async () => {
+
+    const connectionService = new ConnectionTODB();
+    const mongoConnection = await connectionService.connect();
+
+    app.use("/v1", createAppRouter(mongoConnection));
+
+    app.listen(PORT, "0.0.0.0", () => {
+        console.log(`Server running on port ${PORT}`);
+    });
+
+})();

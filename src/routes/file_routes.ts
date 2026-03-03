@@ -1,18 +1,13 @@
 import { Router } from "express";
+import { Connection } from "mongoose";
 import { FileController } from "../controllers/file_controller";
-import { CommonMiddleware } from "../common_middleware";
 
-const router = Router();
-const fileController = new FileController();
-const common_middleware = new CommonMiddleware();
-// File upload endpoint
-let middleware = [
-    common_middleware.trackRequest
-]
+export default function file_router(connection: Connection) {
 
-router.route("/upload")
-    .post(middleware, fileController.fileUploadController)
-// router.post("/upload", fileController.fileUploadController);
+    const router = Router();
+    const fileController = new FileController(connection);
 
-export default router;
+    router.post("/upload", fileController.fileUploadController);
 
+    return router;
+}
