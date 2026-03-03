@@ -1,18 +1,21 @@
 import { CloudWatchClient, PutMetricDataCommand } from "@aws-sdk/client-cloudwatch";
 import type { CloudWatchClientConfig } from "@aws-sdk/client-cloudwatch";
 import dotenv, { config } from "dotenv"
+import { AppConfig, configs } from "../app.config";
 dotenv.config();
 
 export class CloudWatchMetric {
     private client: CloudWatchClient;
+    private _config : AppConfig;
 
-    constructor() {
+    constructor(appConfig: AppConfig = configs) {
+        this._config = appConfig;
         const config = {};
         this.client = new CloudWatchClient({
-            region : process.env.AWS_DEFAULT_REGION as string,
+            region : this._config.awsRegion as string,
             credentials: {
-                accessKeyId: process.env.AWS_ACCESS_KEY as string,
-                secretAccessKey : process.env.AWS_SECRET_ACCESS_KEY as string
+                accessKeyId: this._config.awsAccessKey as string,
+                secretAccessKey : this._config.awsSecretAccessKey as string
             }
         });
     }

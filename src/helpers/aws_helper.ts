@@ -1,23 +1,26 @@
 import { S3helperClient, S3helperClientresponse, s3Parts } from "../common_interface";
 import { S3Client, PutObjectCommand, DeleteObjectCommand, DeleteObjectsCommand, CreateMultipartUploadCommand, AbortMultipartUploadCommand, UploadPartCommand, CompleteMultipartUploadCommand } from "@aws-sdk/client-s3";
 import * as fs from "fs"
+import { AppConfig, configs } from "../app.config";
 
 export class aws_helper {
     private client: S3helperClient;
+    private _config: AppConfig;
 
-    constructor() {
-        if (process.env.NODE_env = "local") {
+    constructor(appConfig: AppConfig = configs) {
+        this._config = appConfig;
+        if (this._config.environment = "local") {
             this.client = new S3Client({
-                region: process.env.AWS_DEFAULT_REGION as string,
+                region: this._config.awsRegion as string,
                 credentials: {
-                    accessKeyId: process.env.AWS_ACCESS_KEY as string,
-                    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string
+                    accessKeyId: this._config.awsAccessKey as string,
+                    secretAccessKey: this._config.awsSecretAccessKey as string
                 }
             });
         }
         else {
             this.client = new S3Client({
-                region: process.env.AWS_DEFAULT_REGION as string,
+                region: this._config.awsRegion as string,
             });
         }
     }
@@ -26,7 +29,7 @@ export class aws_helper {
         let that = this;
         return new Promise(function (resolve, reject) {
             const command = new PutObjectCommand({
-                Bucket: process.env.S3_BUCKET,
+                Bucket: that._config.s3Bucket,
                 Key: filename,
                 Body: fs.readFileSync(localFilePath),
             });
@@ -46,7 +49,7 @@ export class aws_helper {
         let that = this;
         return new Promise(function (resolve, reject) {
             const command = new DeleteObjectCommand({
-                Bucket: process.env.S3_BUCKET,
+                Bucket: that._config.s3Bucket,
                 Key: filepath
             });
 
