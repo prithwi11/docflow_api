@@ -46,6 +46,9 @@ function load_config(): AppConfig {
         },
         test: {
             ...base_config,
+            dbName: 'docflow-test',
+            queueName: 'file-processor-test',
+            s3Bucket: 'docflow-test-bucket',
             environment: 'test'
         }
     }
