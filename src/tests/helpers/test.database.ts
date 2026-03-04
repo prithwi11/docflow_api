@@ -12,7 +12,7 @@ export class TestDatabase {
     }
 
     async connect(): Promise<Connection> {
-        const connectionUri: string = `${this._config.mongoUri}${this._config.dbName}`;
+        const connectionUri: string = `${this._config.mongoUri}/${this._config.dbName}`;
         this.connection = await mongoose.createConnection(connectionUri, {
             maxPoolSize: 5,
         }).asPromise();
