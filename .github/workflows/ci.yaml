@@ -26,4 +26,17 @@ jobs:
 
             - name: Run tests
               run: npm run test
+              env:
+                PORT: ${{secrets.PORT}}
+                NODE_ENV: ${{secrets.NODE_ENV}}
+                TZ: ${{secrets.TZ}}
+                VERSION: ${{secrets.VERSION}}
+                QUEUE_NAME: ${{secrets.QUEUE_NAME}}
+                RABBITMQ_HOST: ${{secrets.RABBITMQ_HOST}}
+                MONGODB_URI: ${{secrets.MONGODB_URI}}
+                DB_NAME: ${{secrets.DB_NAME}}
+                AWS_ACCESS_KEY: ${{secrets.AWS_ACCESS_KEY}}
+                AWS_SECRET_ACCESS_KEY: ${{secrets.AWS_SECRET_ACCESS_KEY}}
+                S3_BUCKET: ${{secrets.S3_BUCKET}}
+                AWS_DEFAULT_REGION: ${{secrets.AWS_DEFAULT_REGION}}
 
