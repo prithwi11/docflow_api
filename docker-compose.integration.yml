@@ -32,7 +32,7 @@ services:
       - S3_ENDPOINT=http://localstack:4566
       - S3_BUCKET=docflow-test-bucket
     ports:
-      -"4566:4566"
+      - "4566:4566"
       
   test_runner:
     build:
