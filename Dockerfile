@@ -26,7 +26,7 @@ COPY --from=builder /src/dist ./dist
 RUN chown -R appUser:appUser /src
 USER appUser
 
-CMD ["node", "dist/worker.js"]
+CMD ["node", "dist/app.js"]
 
 
 #--------------------------------------- STAGE 3: Test Runtime -------------------------------
