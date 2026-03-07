@@ -26,6 +26,8 @@ export class TestS3Config {
 
         this.client = new S3Client({
             region: this._config.awsRegion,
+            endpoint: "http://localstack:4566",
+            forcePathStyle: true,
             credentials: {
                 accessKeyId: this._config.awsAccessKey,
                 secretAccessKey: this._config.awsSecretAccessKey
