@@ -19,6 +19,7 @@ export class aws_helper {
                     secretAccessKey: this._config.awsSecretAccessKey as string
                 }
             });
+            console.log("s3Client", this.client)
         }
         else {
             this.client = new S3Client({
