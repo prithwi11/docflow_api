@@ -51,7 +51,7 @@ jobs:
           run: |
             docker build \
             --target production \
-            -t ${{secrets.ECR_REPOSITORY}}:${{github.sha}}
+            -t ${{secrets.ECR_REPOSITORY}}:${{github.sha}} .
 
         - name: Tag Image
           run: |
