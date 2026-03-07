@@ -12,6 +12,8 @@ export class aws_helper {
         if (this._config.environment == "local" || this._config.environment == "test") {
             this.client = new S3Client({
                 region: this._config.awsRegion as string,
+                endpoint: "http://localstack:4566",
+                forcePathStyle: true,
                 credentials: {
                     accessKeyId: this._config.awsAccessKey as string,
                     secretAccessKey: this._config.awsSecretAccessKey as string

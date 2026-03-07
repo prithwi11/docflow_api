@@ -11,48 +11,61 @@ on:
 jobs:
     integration-test:
         runs-on: ubuntu-latest
-        services:
-            mongo: 
-                image: mongo:7
-                ports:
-                    - "27017:27017"
-                options: >-
-                    --health-cmd="mongosh --eval 'db.runCommand({ ping: 1 })'"
-                    --health-interval=10s
-                    --health-timeout=5s
-                    --health-retries=5
+        # services:
+        #     mongo: 
+        #         image: mongo:7
+        #         ports:
+        #             - "27017:27017"
+        #         options: >-
+        #             --health-cmd="mongosh --eval 'db.runCommand({ ping: 1 })'"
+        #             --health-interval=10s
+        #             --health-timeout=5s
+        #             --health-retries=5
 
-            rabbitmq:
-                image: rabbitmq:3-management
-                ports:
-                    - "5672-5672"
-                    - "15672-15672"
+        #     rabbitmq:
+        #         image: rabbitmq:3-management
+        #         ports:
+        #             - "5672-5672"
+        #             - "15672-15672"
         steps:
             - name: Checkout Code
               uses: actions/checkout@v4
+            
+            - name: Set up Docker
+              uses: docker/setup-buildx-action@v3
+            
+            - name: Run integration tests
+              run: |
+                docker compose -f docker-compose.integration.yml up \
+                --build \
+                --abort-on-container-exit \
+                --exit-code-from test_runner
 
-            - name: Set up Node JS environment
-              uses: actions/setup-node@v4
-              with:
-                  node-version: 22.18.0
+            # - name: Set up Node JS environment
+            #   uses: actions/setup-node@v4
+            #   with:
+            #       node-version: 22.18.0
 
-            - name: Install dependencies
-              run: npm ci
+            # - name: Install dependencies
+            #   run: npm ci
 
-            - name: Run tests
-              run: npm run test
-              env:
-                PORT: ${{secrets.PORT}}
-                NODE_ENV: ${{secrets.NODE_ENV}}
-                TZ: ${{secrets.TZ}}
-                VERSION: ${{secrets.VERSION}}
-                QUEUE_NAME: ${{secrets.QUEUE_NAME}}
-                RABBITMQ_HOST: ${{secrets.RABBITMQ_HOST}}
-                MONGODB_URI: ${{secrets.MONGODB_URI}}
-                DB_NAME: ${{secrets.DB_NAME}}
-                AWS_ACCESS_KEY: ${{secrets.AWS_ACCESS_KEY}}
-                AWS_SECRET_ACCESS_KEY: ${{secrets.AWS_SECRET_ACCESS_KEY}}
-                S3_BUCKET: ${{secrets.S3_BUCKET}}
-                AWS_DEFAULT_REGION: ${{secrets.AWS_DEFAULT_REGION}}
-                LOG_PATH: ${{ github.workspace }}/logs
+            # - name: Run lint
+            #   run: npm run lint
+
+            # - name: Run tests
+            #   run: npm run test
+            #   env:
+            #     PORT: ${{secrets.PORT}}
+            #     NODE_ENV: ${{secrets.NODE_ENV}}
+            #     TZ: ${{secrets.TZ}}
+            #     VERSION: ${{secrets.VERSION}}
+            #     QUEUE_NAME: ${{secrets.QUEUE_NAME}}
+            #     RABBITMQ_HOST: ${{secrets.RABBITMQ_HOST}}
+            #     MONGODB_URI: ${{secrets.MONGODB_URI}}
+            #     DB_NAME: ${{secrets.DB_NAME}}
+            #     AWS_ACCESS_KEY: ${{secrets.AWS_ACCESS_KEY}}
+            #     AWS_SECRET_ACCESS_KEY: ${{secrets.AWS_SECRET_ACCESS_KEY}}
+            #     S3_BUCKET: ${{secrets.S3_BUCKET}}
+            #     AWS_DEFAULT_REGION: ${{secrets.AWS_DEFAULT_REGION}}
+            #     LOG_PATH: ${{ github.workspace }}/logs
 
