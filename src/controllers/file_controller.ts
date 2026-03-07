@@ -10,12 +10,16 @@ import moment from "moment";
 import { FileModel } from "../Models/file_model";
 import { aws_helper } from "../helpers/aws_helper";
 import { Connection } from "mongoose";
+import { AppConfig, configs } from "../app.config";
 export class FileController {
   private s3_helper = new aws_helper();
   private _filesModel: FileModel;
+  private queueHelper: any;
+  private _config: AppConfig;
 
-  constructor(connection: Connection) {
+  constructor(connection: Connection, appConfig: AppConfig = configs) {
       this._filesModel = new FileModel(connection);
+      this._config = appConfig;
   }
 
   // INITIALIZE LOG OBJECT
@@ -26,7 +30,7 @@ export class FileController {
 
   private storage = multer.diskStorage({
     destination: (req, file, cb) => {
-      cb(null, "src/uploads/");
+      cb(null, this._config.environment == "test" ? "src/tests/uploads" : "src/uploads");
     },
     filename: (req, file, cb) => {
       const uniqueName = Date.now() + path.extname(file.originalname);
@@ -45,7 +49,6 @@ export class FileController {
     // global.logs.writelog(apiname_with_trace_id, ['Request : ', req]);
     
     const startTime = Date.now();
-    
     this.upload(req, res, async (err: any) => {
       if (err) {
         await metricsEmitter.emit("api_request_complete", {
