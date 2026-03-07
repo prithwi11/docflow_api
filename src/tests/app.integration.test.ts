@@ -20,6 +20,7 @@ describe("Test 1: End to end Image Upload", () => {
     const test_s3_setup = new TestS3Config();
 
     beforeAll(async() => {
+        await test_s3_setup.createTestBucket();
         connection = await test_db.connect();
         const controller = new FileController(connection);
         
