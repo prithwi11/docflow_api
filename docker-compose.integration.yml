@@ -21,6 +21,18 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+  
+  localstack:
+    image: localstack/localstack
+    environment:
+      - SERVICES=S3
+      - AWS_DEFAULT_REGION=us-east-1
+      - AWS_ACCESS_KEY=test
+      - AWS_SECRET_ACCESS_KEY=test
+      - S3_ENDPOINT=http://localstack:4566
+      - S3_BUCKET=docflow-test-bucket
+    ports:
+      -"4566:4566"
       
   test_runner:
     build:
