@@ -49,7 +49,9 @@ export class FileController {
     // global.logs.writelog(apiname_with_trace_id, ['Request : ', req]);
     
     const startTime = Date.now();
+    console.time("uploadtoLocalDir")
     this.upload(req, res, async (err: any) => {
+      console.timeEnd("uploadtoLocalDir")
       if (err) {
         await metricsEmitter.emit("api_request_complete", {
           durationMs: Date.now() - startTime,
@@ -66,11 +68,13 @@ export class FileController {
         return res.status(400).json({ message: "No file uploaded" });
       }
       try {
+        console.time("timefors3upload")
         const s3Response: any = await this.s3_helper.s3Upload( req.file.path, req.file.filename);
         global.logs.writelog(apiname_with_trace_id, ["s3Response: ", s3Response]);
         if (s3Response.error) {
           throw new Error("S3 upload failed");
         }
+        console.timeEnd("timefors3upload")
         const insert_obj: any = {
           image_id: randomUUID(),
           image_name: req.file?.filename as string,
