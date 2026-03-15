@@ -1,11 +1,15 @@
 import { Router } from "express";
+import { Connection } from "mongoose";
 import { FileController } from "../controllers/file_controller";
 
-const router = Router();
-const fileController = new FileController();
+export default function file_router(connection: Connection) {
 
-// File upload endpoint
-router.post("/upload", fileController.fileUploadController);
+    const router = Router();
+    const fileController = new FileController(connection);
 
-export default router;
+    // router.post("/upload", fileController.fileUploadController);
+    router.post('/get-presigned-url', fileController.generateUploadUrl)
+    router.post('/confirm-upload', fileController.confirmUpload)
 
+    return router;
+}

@@ -1,10 +1,12 @@
 import { Router } from "express";
+import { Connection } from "mongoose";
 import file_router from "./routes/file_routes";
 
-const router = Router();
+export function createAppRouter(connection: Connection) {
 
-// Mount file routes at /file path
-router.use("/file", file_router);
+    const router = Router();
 
-export { router as app_route };
+    router.use("/file", file_router(connection));
 
+    return router;
+}
