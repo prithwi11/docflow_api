@@ -45,6 +45,10 @@ app.get('/v1/health', (_req: any, res: any) => {
     res.json({status : 'server is running'})
 })
 
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+
 winlog.initiateLoggingSystem();
 (async () => {
 

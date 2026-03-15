@@ -28,85 +28,187 @@ export class FileController {
     global.logs.logObj.application = global.path.dirname(__filename) + global.path.basename(__filename);
 }
 
-  private storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-      cb(null, this._config.environment == "test" ? "src/tests/uploads" : "src/uploads");
-    },
-    filename: (req, file, cb) => {
-      const uniqueName = Date.now() + path.extname(file.originalname);
-      cb(null, uniqueName);
-    },
-  });
-  private upload = multer({
-    storage: this.storage,
-  }).single("file");
-  /* private storage = multer.memoryStorage();
-  private upload = multer({storage: this.storage}).single("file") */
+  // /* private storage = multer.diskStorage({
+  //   destination: (req, file, cb) => {
+  //     cb(null, this._config.environment == "test" ? "src/tests/uploads" : "src/uploads");
+  //   },
+  //   filename: (req, file, cb) => {
+  //     const uniqueName = Date.now() + path.extname(file.originalname);
+  //     cb(null, uniqueName);
+  //   },
+  // });
+  // private upload = multer({
+  //   storage: this.storage,
+  // }).single("file");
+  // /* private storage = multer.memoryStorage();
+  // private upload = multer({storage: this.storage}).single("file") */
 
-  fileUploadController = async(req: Request, res: Response, next: NextFunction) => {
-    this.initLog()
-    let apiname_with_trace_id: string = 'fileUploadController - ';
-    // global.logs.writelog(apiname_with_trace_id, ['Request : ', req]);
+  // fileUploadController = async(req: Request, res: Response, next: NextFunction) => {
+  //   this.initLog()
+  //   let apiname_with_trace_id: string = 'fileUploadController - ';
+  //   // global.logs.writelog(apiname_with_trace_id, ['Request : ', req]);
     
-    const startTime = Date.now();
-    console.time("uploadtoLocalDir")
-    this.upload(req, res, async (err: any) => {
-      console.timeEnd("uploadtoLocalDir")
-      if (err) {
-        await metricsEmitter.emit("api_request_complete", {
-          durationMs: Date.now() - startTime,
-          succcess: false,
-        });
+  //   const startTime = Date.now();
+  //   console.time("uploadtoLocalDir")
+  //   this.upload(req, res, async (err: any) => {
+  //     console.timeEnd("uploadtoLocalDir")
+  //     if (err) {
+  //       await metricsEmitter.emit("api_request_complete", {
+  //         durationMs: Date.now() - startTime,
+  //         succcess: false,
+  //       });
     
-        return res.status(400).json({ error: err.message });
-      }
-      if (!req.file) {
-        await metricsEmitter.emit("api_request_complete", {
-          durationMs: Date.now() - startTime,
-          succcess: false,
-        });
-        return res.status(400).json({ message: "No file uploaded" });
-      }
-      try {
-        console.time("timefors3upload")
-        const s3Response: any = await this.s3_helper.s3Upload( req.file.path, req.file.filename);
-        global.logs.writelog(apiname_with_trace_id, ["s3Response: ", s3Response]);
-        if (s3Response.error) {
-          throw new Error("S3 upload failed");
-        }
-        console.timeEnd("timefors3upload")
-        const insert_obj: any = {
-          image_id: randomUUID(),
-          image_name: req.file?.filename as string,
-          status: 'uploaded',
-          added_timestamp: moment().format("YYYY-MM-DD HH:mm:ss")
-        }
-        const insert: any = await this._filesModel.addNewRecord(insert_obj);
-        global.logs.writelog(apiname_with_trace_id, ["insert: ", insert]);
-        const processImage = await global.SQS_HELPER.sendToRabbitMQ({image_name: req.file.filename, startTime: startTime, image_id: insert_obj.image_id});
-        metricsEmitter.emit("queue_publish_success");
-        metricsEmitter.emit("api_request_complete", {
-          durationMs: Date.now() - startTime,
-          success: true
-        });
-        return res.status(200).json({
-          message: "File uploaded and PDF processed successfully",
-        });
-      } catch (error: any) {
-        global.logs.writelog(apiname_with_trace_id, ["ERROR: ", error.stack]);
-        await metricsEmitter.emit("queue_publish_error");
+  //       return res.status(400).json({ error: err.message });
+  //     }
+  //     if (!req.file) {
+  //       await metricsEmitter.emit("api_request_complete", {
+  //         durationMs: Date.now() - startTime,
+  //         succcess: false,
+  //       });
+  //       return res.status(400).json({ message: "No file uploaded" });
+  //     }
+  //     try {
+  //       console.time("timefors3upload")
+  //       const s3Response: any = await this.s3_helper.s3Upload( req.file.path, req.file.filename);
+  //       global.logs.writelog(apiname_with_trace_id, ["s3Response: ", s3Response]);
+  //       if (s3Response.error) {
+  //         throw new Error("S3 upload failed");
+  //       }
+  //       console.timeEnd("timefors3upload")
+  //       const insert_obj: any = {
+  //         image_id: randomUUID(),
+  //         image_name: req.file?.filename as string,
+  //         status: 'uploaded',
+  //         added_timestamp: moment().format("YYYY-MM-DD HH:mm:ss")
+  //       }
+  //       const insert: any = await this._filesModel.addNewRecord(insert_obj);
+  //       global.logs.writelog(apiname_with_trace_id, ["insert: ", insert]);
+  //       const processImage = await global.SQS_HELPER.sendToRabbitMQ({image_name: req.file.filename, startTime: startTime, image_id: insert_obj.image_id});
+  //       metricsEmitter.emit("queue_publish_success");
+  //       metricsEmitter.emit("api_request_complete", {
+  //         durationMs: Date.now() - startTime,
+  //         success: true
+  //       });
+  //       return res.status(200).json({
+  //         message: "File uploaded and PDF processed successfully",
+  //       });
+  //     } catch (error: any) {
+  //       global.logs.writelog(apiname_with_trace_id, ["ERROR: ", error.stack]);
+  //       await metricsEmitter.emit("queue_publish_error");
 
-        await metricsEmitter.emit("api_request_complete", {
-          durationMs: Date.now() - startTime,
-          success: false,
-        });
-        return res.status(500).json({
-          message: "Error processing PDF",
-          error: error.message,
-        });
+  //       await metricsEmitter.emit("api_request_complete", {
+  //         durationMs: Date.now() - startTime,
+  //         success: false,
+  //       });
+  //       return res.status(500).json({
+  //         message: "Error processing PDF",
+  //         error: error.message,
+  //       });
+  //     }
+  //   });
+  // }; */
+
+  generateUploadUrl = async(req: Request, res: Response) => {
+    try {
+      console.log("reqBody", req.body)
+      const { fileName, contentType } = req.body;
+
+      if (!fileName || !contentType) {
+        return res.status(400).json({ message : "File name or content type missing" });
       }
+      const key = `${Date.now()}-${fileName}`;
+      const presigned = await this.s3_helper.generatePresignedUploadURL(key, contentType);
+
+      if (presigned.error) {
+        throw new Error("Failed to generate upload URL")
+      }
+      return res.status(200).json({
+        uploadUrl: presigned.uploadUrl,
+        key: presigned.key
+      })
+    }
+    catch (error: any) {
+      return res.status(500).json({
+        message: "Failed to generate upload URL",
+        error: error.message
     });
-  };
+    }
+  }
+
+  confirmUpload = async (req: Request, res: Response) => {
+
+    this.initLog()
+
+    let apiname_with_trace_id = "confirmUpload - ";
+
+    global.logs.writelog(apiname_with_trace_id, ["Request: ", req.body]);
+
+    const startTime = Date.now();
+
+    try {
+
+        const { key } = req.body;
+
+        if (!key) {
+
+            global.logs.writelog(apiname_with_trace_id, ["Missing key in request"]);
+
+            return res.status(400).json({
+                message: "S3 key required"
+            });
+
+        }
+
+        const insert_obj: any = {
+            image_id: randomUUID(),
+            image_name: key,
+            status: "uploaded",
+            added_timestamp: moment().format("YYYY-MM-DD HH:mm:ss")
+        };
+
+        global.logs.writelog(apiname_with_trace_id, ["Insert object: ", insert_obj]);
+
+        const insert = await this._filesModel.addNewRecord(insert_obj);
+
+        global.logs.writelog(apiname_with_trace_id, ["DB insert result: ", insert]);
+
+        const queueResponse = await global.SQS_HELPER.sendToRabbitMQ({
+            image_name: key,
+            startTime,
+            image_id: insert_obj.image_id
+        });
+
+        global.logs.writelog(apiname_with_trace_id, ["Queue publish response: ", queueResponse]);
+
+        metricsEmitter.emit("queue_publish_success");
+
+        metricsEmitter.emit("api_request_complete", {
+            durationMs: Date.now() - startTime,
+            success: true
+        });
+
+        return res.status(200).json({
+            message: "Upload confirmed"
+        });
+
+    } catch (error: any) {
+
+        global.logs.writelog(apiname_with_trace_id, ["ERROR: ", error.stack]);
+
+        metricsEmitter.emit("queue_publish_error");
+
+        metricsEmitter.emit("api_request_complete", {
+            durationMs: Date.now() - startTime,
+            success: false
+        });
+
+        return res.status(500).json({
+            message: "Error confirming upload",
+            error: error.message
+        });
+
+    }
+};
 
   resizeImage = async (image_path: string, image_name: string): Promise<boolean> => {
     try {
